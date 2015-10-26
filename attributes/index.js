@@ -7,11 +7,11 @@ var DomJSON = require("./DomJSON")
 
 var attributes = module.exports = {}
 
-attributes.DomString = DomString
-attributes.DomBoolean = DomBoolean
-attributes.DomNumber = DomNumber
-attributes.DomFloat = DomFloat
-attributes.DomJSON = DomJSON
+attributes.String = DomString
+attributes.Boolean = DomBoolean
+attributes.Number = DomNumber
+attributes.Float = DomFloat
+attributes.JSON = DomJSON
 
 attributes.create = function (def) {
   switch (Attribute.getType(def)) {

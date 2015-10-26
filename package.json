@@ -27,5 +27,9 @@
     "browserify": "^11.2.0",
     "chai": "^3.4.0",
     "mocha": "^2.3.3"
+  },
+  "dependencies": {
+    "matchbox-attributes": "^0.2.0",
+    "matchbox-factory": "^0.2.0"
   }
 }
