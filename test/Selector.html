@@ -1,0 +1,188 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../node_modules/mocha/mocha.css"/>
+    <title></title>
+</head>
+<body>
+
+<div id="mocha"></div>
+
+<div data-screen>
+    <div data-region="header">
+        <div data-element=""></div>
+    </div>
+    <div data-region="sidebar"></div>
+    <div data-region="main"></div>
+</div>
+
+<script type="text/javascript" src="../matchbox-dom.debug.js"></script>
+<script type="text/javascript" src="../node_modules/mocha/mocha.js"></script>
+<script type="text/javascript" src="../node_modules/chai/chai.js"></script>
+<script type="text/javascript">
+    mocha.setup("bdd")
+</script>
+<script type="text/javascript">
+    !function (dom, chai) {
+        var assert = chai.assert
+
+        describe("Selector", function () {
+            it("basic", function () {
+                var selector = new dom.Selector({
+                    attribute: "data-test",
+                    value: "test",
+                    operator: "="
+                })
+                assert.equal(selector.toString(), '[data-test="test"]')
+            })
+            it("id", function () {
+                var selector = new dom.Selector({
+                    attribute: "id",
+                    value: "test"
+                })
+                assert.equal(selector.toString(), '#test')
+            })
+            it("class", function () {
+                var selector = new dom.Selector({
+                    attribute: "class",
+                    value: "test"
+                })
+                assert.equal(selector.toString(), '.test')
+            })
+            it("element", function () {
+                var selector = new dom.Selector({
+                    attribute: "",
+                    value: "test"
+                })
+                assert.equal(selector.toString(), 'test')
+
+                selector = new dom.Selector({
+                    value: "test"
+                })
+                assert.equal(selector.toString(), 'test')
+            })
+            it("extra", function () {
+                var selector = new dom.Selector({
+                    attribute: "",
+                    value: "",
+                    extra: "HELLO"
+                })
+                assert.equal(selector.toString(), 'HELLO')
+
+                selector = new dom.Selector({
+                    value: "",
+                    extra: "HELLO"
+                })
+                assert.equal(selector.toString(), 'HELLO')
+
+                selector = new dom.Selector({
+                    extra: "HELLO"
+                })
+                assert.equal(selector.toString(), 'HELLO')
+            })
+            it("value", function () {
+                var selector = new dom.Selector({
+                    attribute: "data-test",
+                    value: "test"
+                })
+
+                assert.equal(selector.equal().toString(), '[data-test]')
+                assert.equal(selector.equal(true).toString(), '[data-test]')
+                assert.equal(selector.equal(false).toString(), '[data-test]')
+                assert.equal(selector.equal(null).toString(), '[data-test]')
+                assert.equal(selector.equal("").toString(), '[data-test]')
+                assert.equal(selector.equal(0).toString(), '[data-test="0"]')
+                assert.equal(selector.equal("0").toString(), '[data-test="0"]')
+            })
+            it("clone", function () {
+                var selector = new dom.Selector()
+                assert.equal(selector.toString(), selector.clone().toString())
+            })
+            it("combine", function () {
+                var selector = new dom.Selector({
+                    attribute: "data-test",
+                    value: "test",
+                    operator: "="
+                })
+
+                var newSelector = selector.combine("HELLO")
+                assert.instanceOf(newSelector, dom.Selector)
+                assert.notEqual(selector, newSelector)
+                assert.equal(newSelector.toString(), '[data-test="test"]HELLO')
+
+                var otherSelector = new dom.Selector({
+                    attribute: "data-test",
+                    value: "test",
+                    operator: "="
+                })
+                newSelector = selector.combine(otherSelector)
+                assert.equal(newSelector.toString(), '[data-test="test"][data-test="test"]')
+            })
+            it("equal", function () {
+                var selector = new dom.Selector({
+                    attribute: "data-test",
+                    value: "test",
+                    operator: "ASD"
+                })
+
+                var newSelector = selector.equal("TEST")
+                assert.instanceOf(newSelector, dom.Selector)
+                assert.notEqual(selector, newSelector)
+                assert.equal(newSelector.operator, "=")
+                assert.equal(newSelector.value, "TEST")
+            })
+            it("contains", function () {
+                var selector = new dom.Selector({
+                    attribute: "data-test",
+                    value: "test",
+                    operator: "ASD"
+                })
+
+                var newSelector = selector.contains("TEST")
+                assert.instanceOf(newSelector, dom.Selector)
+                assert.notEqual(selector, newSelector)
+                assert.equal(newSelector.operator, "~")
+                assert.equal(newSelector.value, "TEST")
+            })
+            it("prefix", function () {
+                var selector = new dom.Selector({
+                    attribute: "data-test",
+                    value: "test",
+                    operator: "ASD"
+                })
+
+                var newSelector = selector.prefix("TEST")
+                assert.instanceOf(newSelector, dom.Selector)
+                assert.notEqual(selector, newSelector)
+                assert.equal(newSelector.value, "TEST:test")
+                assert.equal(newSelector.prefix("TEST", "/").value, "TEST/TEST:test")
+            })
+            it("nest", function () {
+                var selector = new dom.Selector({
+                    attribute: "data-test",
+                    value: "test",
+                    operator: "ASD"
+                })
+
+                var newSelector = selector.nest("TEST")
+                assert.instanceOf(newSelector, dom.Selector)
+                assert.notEqual(selector, newSelector)
+                assert.equal(newSelector.value, "test:TEST")
+                assert.equal(newSelector.nest("TEST", "/").value, "test:TEST/TEST")
+            })
+            it("from", function () {
+                var selector = new dom.Selector({})
+
+                var newSelector = selector.from(null)
+                assert.instanceOf(newSelector, dom.Selector)
+                assert.notEqual(selector, newSelector)
+                assert.isNull(newSelector.element)
+            })
+        })
+    }(window.matchboxDom, window.chai)
+</script>
+<script type="text/javascript">
+    mocha.run()
+</script>
+</body>
+</html>

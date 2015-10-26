@@ -1,2 +1,2 @@
-# matchbox-dom
-DOM utilities
+matchbox-dom
+============

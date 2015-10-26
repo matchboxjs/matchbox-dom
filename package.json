@@ -1,0 +1,31 @@
+{
+  "name": "matchbox-dom",
+  "version": "0.2.0",
+  "description": "DOM utilities",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha",
+    "build-standalone": "browserify index.js --standalone matchboxDom -o matchbox-dom.js",
+    "build-debug": "browserify index.js --standalone matchboxDom --debug -o matchbox-dom.debug.js",
+    "build": "npm run build-standalone && npm run build-debug"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matchboxjs/matchbox-dom.git"
+  },
+  "keywords": [
+    "matchbox",
+    "dom"
+  ],
+  "author": "tunderdomb",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/matchboxjs/matchbox-dom/issues"
+  },
+  "homepage": "https://github.com/matchboxjs/matchbox-dom#readme",
+  "devDependencies": {
+    "browserify": "^11.2.0",
+    "chai": "^3.4.0",
+    "mocha": "^2.3.3"
+  }
+}

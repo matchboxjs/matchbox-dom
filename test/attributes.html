@@ -1,0 +1,292 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../node_modules/mocha/mocha.css"/>
+    <title></title>
+</head>
+<body>
+
+<div id="mocha"></div>
+
+<div data-screen>
+    <div data-region="header">
+        <div data-element=""></div>
+    </div>
+    <div data-region="sidebar"></div>
+    <div data-region="main"></div>
+</div>
+
+<script type="text/javascript" src="../matchbox-dom.debug.js"></script>
+<script type="text/javascript" src="../node_modules/mocha/mocha.js"></script>
+<script type="text/javascript" src="../node_modules/chai/chai.js"></script>
+<script type="text/javascript">
+    mocha.setup("bdd")
+</script>
+<script type="text/javascript">
+    !function (dom, chai) {
+        var assert = chai.assert
+
+        describe("attributes", function () {
+            function test (name, fn) {
+                it(name, function () {
+                    function Test (element) {
+                        this.element = element
+                    }
+                    var element = document.createElement("div")
+                    document.body.appendChild(element)
+                    fn.call(this, Test, element)
+                    document.body.removeChild(element)
+                })
+            }
+            function getContext(test) {
+                return test.element
+            }
+
+            describe("DomBoolean", function () {
+                test("no default", function (Test, element) {
+                    var attr = new dom.attributes.Boolean({
+                        name: "bool"
+                    })
+                    attr.defineProperty(Test.prototype, "bool", getContext)
+                    var obj = new Test(element)
+                    assert.isFalse(obj.bool)
+                    assert.isFalse(element.hasAttribute("data-bool"))
+                })
+                test("with default", function (Test, element) {
+                    var attr = new dom.attributes.Boolean({
+                        name: "bool",
+                        default: false
+                    })
+                    attr.defineProperty(Test.prototype, "bool", getContext)
+                    var obj = new Test(element)
+                    assert.isFalse(obj.bool)
+                    assert.isFalse(element.hasAttribute("data-bool"))
+                })
+                test("setter", function (Test, element) {
+                    var attr = new dom.attributes.Boolean({
+                        name: "bool",
+                        default: false
+                    })
+                    attr.defineProperty(Test.prototype, "bool", getContext)
+                    var obj = new Test(element)
+                    obj.bool = true
+                    assert.isTrue(obj.bool)
+                    assert.isTrue(element.hasAttribute("data-bool"))
+                })
+                test("remove", function (Test, element) {
+                    var attr = new dom.attributes.Boolean({
+                        name: "bool",
+                        default: false
+                    })
+                    attr.defineProperty(Test.prototype, "bool", getContext)
+                    var obj = new Test(element)
+                    obj.bool = true
+                    assert.isTrue(obj.bool)
+                    assert.isTrue(element.hasAttribute("data-bool"))
+                    obj.bool = null
+                    assert.isFalse(obj.bool)
+                    assert.isFalse(element.hasAttribute("data-bool"))
+                })
+            })
+
+            describe("DomString", function () {
+                test("no default", function (Test, element) {
+                    var attr = new dom.attributes.String({
+                        name: "string"
+                    })
+                    attr.defineProperty(Test.prototype, "string", getContext)
+                    var obj = new Test(element)
+                    assert.isNull(obj.string)
+                    assert.isFalse(element.hasAttribute("data-string"))
+                })
+                test("with default", function (Test, element) {
+                    var attr = new dom.attributes.String({
+                        name: "string",
+                        default: ""
+                    })
+                    attr.defineProperty(Test.prototype, "string", getContext)
+                    var obj = new Test(element)
+                    assert.equal(obj.string, "")
+                    assert.isFalse(element.hasAttribute("data-string"))
+                })
+                test("setter", function (Test, element) {
+                    var attr = new dom.attributes.String({
+                        name: "string",
+                        default: ""
+                    })
+                    attr.defineProperty(Test.prototype, "string", getContext)
+                    var obj = new Test(element)
+                    obj.string = "hello"
+                    assert.equal(obj.string, "hello")
+                    assert.equal(element.getAttribute("data-string"), "hello")
+                })
+                test("remove", function (Test, element) {
+                    var attr = new dom.attributes.String({
+                        name: "string",
+                        default: ""
+                    })
+                    attr.defineProperty(Test.prototype, "string", getContext)
+                    var obj = new Test(element)
+                    obj.string = "hello"
+                    assert.equal(obj.string, "hello")
+                    assert.equal(element.getAttribute("data-string"), "hello")
+                    obj.string = null
+                    assert.equal(obj.string, "")
+                    assert.isFalse(element.hasAttribute("data-string"))
+                })
+            })
+
+            describe("DomNumber", function () {
+                test("no default", function (Test, element) {
+                    var attr = new dom.attributes.Number({
+                        name: "number"
+                    })
+                    attr.defineProperty(Test.prototype, "number", getContext)
+                    var obj = new Test(element)
+                    assert.isNull(obj.number)
+                    assert.isFalse(element.hasAttribute("data-number"))
+                })
+                test("with default", function (Test, element) {
+                    var attr = new dom.attributes.Number({
+                        name: "number",
+                        default: 1
+                    })
+                    attr.defineProperty(Test.prototype, "number", getContext)
+                    var obj = new Test(element)
+                    assert.equal(obj.number, 1)
+                    assert.isFalse(element.hasAttribute("data-number"))
+                })
+                test("setter", function (Test, element) {
+                    var attr = new dom.attributes.Number({
+                        name: "number",
+                        default: 1
+                    })
+                    attr.defineProperty(Test.prototype, "number", getContext)
+                    var obj = new Test(element)
+                    obj.number = 2
+                    assert.equal(obj.number, 2)
+                    assert.equal(element.getAttribute("data-number"), "2")
+                })
+                test("remove", function (Test, element) {
+                    var attr = new dom.attributes.Number({
+                        name: "number",
+                        default: 1
+                    })
+                    attr.defineProperty(Test.prototype, "number", getContext)
+                    var obj = new Test(element)
+                    obj.number = 2
+                    assert.equal(obj.number, 2)
+                    assert.equal(element.getAttribute("data-number"), "2")
+                    obj.number = null
+                    assert.equal(obj.number, 1)
+                    assert.isFalse(element.hasAttribute("data-number"))
+                })
+            })
+
+            describe("DomFloat", function () {
+                test("no default", function (Test, element) {
+                    var attr = new dom.attributes.Float({
+                        name: "float"
+                    })
+                    attr.defineProperty(Test.prototype, "float", getContext)
+                    var obj = new Test(element)
+                    assert.isNull(obj.float)
+                    assert.isFalse(element.hasAttribute("data-float"))
+                })
+                test("with default", function (Test, element) {
+                    var attr = new dom.attributes.Float({
+                        name: "float",
+                        default: 1.1
+                    })
+                    attr.defineProperty(Test.prototype, "float", getContext)
+                    var obj = new Test(element)
+                    assert.equal(obj.float, 1.1)
+                    assert.isFalse(element.hasAttribute("data-float"))
+                })
+                test("setter", function (Test, element) {
+                    var attr = new dom.attributes.Float({
+                        name: "float",
+                        default: 1.1
+                    })
+                    attr.defineProperty(Test.prototype, "float", getContext)
+                    var obj = new Test(element)
+                    obj.float = 2.2
+                    assert.equal(obj.float, 2.2)
+                    assert.equal(element.getAttribute("data-float"), "2.2")
+                })
+                test("remove", function (Test, element) {
+                    var attr = new dom.attributes.Float({
+                        name: "float",
+                        default: 1.1
+                    })
+                    attr.defineProperty(Test.prototype, "float", getContext)
+                    var obj = new Test(element)
+                    obj.float = 2.2
+                    assert.equal(obj.float, 2.2)
+                    assert.equal(element.getAttribute("data-float"), "2.2")
+                    obj.float = null
+                    assert.equal(obj.float, 1.1)
+                    assert.isFalse(element.hasAttribute("data-float"))
+                })
+            })
+
+            describe("DomJSON", function () {
+                test("no default", function (Test, element) {
+                    var attr = new dom.attributes.JSON({
+                        name: "json"
+                    })
+                    attr.defineProperty(Test.prototype, "json", getContext)
+                    var obj = new Test(element)
+                    assert.isNull(obj.json)
+                    assert.isFalse(element.hasAttribute("data-json"))
+                })
+                test("with default", function (Test, element) {
+                    var defaultValue = {}
+                    var attr = new dom.attributes.JSON({
+                        name: "json",
+                        default: defaultValue
+                    })
+                    attr.defineProperty(Test.prototype, "json", getContext)
+                    var obj = new Test(element)
+                    assert.equal(obj.json, defaultValue)
+                    assert.isFalse(element.hasAttribute("data-json"))
+                })
+                test("setter", function (Test, element) {
+                    var defaultValue = {}
+                    var attr = new dom.attributes.JSON({
+                        name: "json",
+                        default: defaultValue
+                    })
+                    attr.defineProperty(Test.prototype, "json", getContext)
+                    var obj = new Test(element)
+                    obj.json = {hey: "ho", "let's": "go", 1: 2, 3: [4]}
+                    var json = obj.json
+                    assert.equal(json.hey, "ho")
+                    assert.equal(json["let's"], "go")
+                    assert.equal(json[1], 2)
+                    assert.isArray(json[3])
+                    assert.equal(json[3][0], 4)
+                    assert.isTrue(element.hasAttribute("data-json"))
+                })
+                test("remove", function (Test, element) {
+                    var defaultValue = {}
+                    var attr = new dom.attributes.JSON({
+                        name: "json",
+                        default: defaultValue
+                    })
+                    attr.defineProperty(Test.prototype, "json", getContext)
+                    var obj = new Test(element)
+                    obj.json = {hey: "ho", "let's": "go", 1: 2, 3: [4]}
+                    obj.json = null
+                    assert.equal(obj.json, defaultValue)
+                    assert.isFalse(element.hasAttribute("data-json"))
+                })
+            })
+        })
+    }(window.matchboxDom, window.chai)
+</script>
+<script type="text/javascript">
+    mocha.run()
+</script>
+</body>
+</html>
