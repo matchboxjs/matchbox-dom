@@ -29,7 +29,7 @@
     "mocha": "^2.3.3"
   },
   "dependencies": {
-    "matchbox-attributes": "^0.2.0",
+    "matchbox-attributes": "^0.2.1",
     "matchbox-factory": "^0.2.0"
   }
 }
