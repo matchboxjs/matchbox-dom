@@ -51,6 +51,18 @@
                     var obj = new Test(element)
                     assert.isFalse(obj.bool)
                     assert.isFalse(element.hasAttribute("data-bool"))
+
+                    obj.bool = false
+                    assert.isFalse(obj.bool)
+                    assert.isFalse(element.hasAttribute("data-bool"))
+
+                    obj.bool = true
+                    assert.isTrue(obj.bool)
+                    assert.isTrue(element.hasAttribute("data-bool"))
+
+                    obj.bool = null
+                    assert.isFalse(obj.bool)
+                    assert.isFalse(element.hasAttribute("data-bool"))
                 })
                 test("with default", function (Test, element) {
                     var attr = new dom.attributes.Boolean({
@@ -61,8 +73,20 @@
                     var obj = new Test(element)
                     assert.isFalse(obj.bool)
                     assert.isFalse(element.hasAttribute("data-bool"))
+
+                    obj.bool = false
+                    assert.isFalse(obj.bool)
+                    assert.isFalse(element.hasAttribute("data-bool"))
+
+                    obj.bool = true
+                    assert.isTrue(obj.bool)
+                    assert.isTrue(element.hasAttribute("data-bool"))
+
+                    obj.bool = null
+                    assert.isFalse(obj.bool)
+                    assert.isFalse(element.hasAttribute("data-bool"))
                 })
-                test("setter", function (Test, element) {
+                test("getter/setter", function (Test, element) {
                     var attr = new dom.attributes.Boolean({
                         name: "bool",
                         default: false
@@ -83,7 +107,16 @@
                     obj.bool = true
                     assert.isTrue(obj.bool)
                     assert.isTrue(element.hasAttribute("data-bool"))
+
                     obj.bool = null
+                    assert.isFalse(obj.bool)
+                    assert.isFalse(element.hasAttribute("data-bool"))
+
+                    obj.bool = true
+                    assert.isTrue(obj.bool)
+                    assert.isTrue(element.hasAttribute("data-bool"))
+
+                    obj.bool = false
                     assert.isFalse(obj.bool)
                     assert.isFalse(element.hasAttribute("data-bool"))
                 })

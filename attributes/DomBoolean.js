@@ -14,6 +14,10 @@ function DomBoolean (def) {
 inherit(DomBoolean, BooleanAttribute)
 include(DomBoolean, DomAttribute)
 
+DomBoolean.prototype.shouldRemove = function (parsedValue) {
+  return parsedValue == null || parsedValue === false
+}
+
 DomBoolean.prototype.parseValue = function (serializedValue) {
   return serializedValue != null
 }
