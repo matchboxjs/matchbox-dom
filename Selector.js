@@ -37,7 +37,7 @@ Selector.prototype.equal = function (value) {
 
 Selector.prototype.contains = function (value) {
   var s = this.clone()
-  s.operator = "~"
+  s.operator = "~="
   s.value = value
   return s
 }
@@ -92,6 +92,21 @@ Selector.prototype.construct = function () {
   }
   else {
     return this.node(instantiate)
+  }
+}
+
+Selector.prototype.find = function () {
+  if (!this.element) {
+    return null
+  }
+  if (this.Constructor) {
+    return this.construct()
+  }
+  if (this.multiple) {
+    return this.nodeList()
+  }
+  else {
+    return this.node()
   }
 }
 
