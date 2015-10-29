@@ -100,7 +100,7 @@ Selector.prototype.equal = function (value) {
 
 Selector.prototype.contains = function (value) {
   var s = this.clone()
-  s.operator = "~"
+  s.operator = "~="
   s.value = value
   return s
 }
@@ -127,12 +127,14 @@ Selector.prototype.from = function (element) {
 
 Selector.prototype.select = function (element, transform) {
   var result = element.querySelector(this.toString())
-  return transform ? transform(result) : result
+  return result
+      ? transform ? transform(result) : result
+      : null
 }
 
 Selector.prototype.selectAll = function (element, transform) {
   var result = element.querySelectorAll(this.toString())
-  return transform ? transform(result) : result
+  return transform ? [].map.call(result, transform) : [].slice.call(result)
 }
 
 Selector.prototype.node = function (transform) {
@@ -149,12 +151,22 @@ Selector.prototype.construct = function () {
     return new Constructor(element)
   }
   if (this.multiple) {
-    return this.nodeList(function (elements) {
-      return [].map.call(elements, instantiate)
-    })
+    return this.nodeList().map(instantiate)
   }
   else {
     return this.node(instantiate)
+  }
+}
+
+Selector.prototype.find = function () {
+  if (this.Constructor || this.instantiate) {
+    return this.construct()
+  }
+  if (this.multiple) {
+    return this.nodeList()
+  }
+  else {
+    return this.node()
   }
 }
 

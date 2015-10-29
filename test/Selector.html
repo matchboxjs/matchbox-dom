@@ -26,6 +26,25 @@
     !function (dom, chai) {
         var assert = chai.assert
 
+        function test (name, id, className, attributes, fn) {
+            it(name, function () {
+                var element = createElement("div", id, className, attributes)
+                document.body.appendChild(element)
+                fn.call(this, element)
+                document.body.removeChild(element)
+            })
+        }
+
+        function createElement (tag, id, className, attributes) {
+            var element = document.createElement(tag)
+            element.id = id || ""
+            element.className = className || ""
+            for (var name in attributes) {
+                element.setAttribute(name, attributes[name])
+            }
+            return element
+        }
+
         describe("Selector", function () {
             it("basic", function () {
                 var selector = new dom.Selector({
@@ -141,7 +160,7 @@
                 var newSelector = selector.contains("TEST")
                 assert.instanceOf(newSelector, dom.Selector)
                 assert.notEqual(selector, newSelector)
-                assert.equal(newSelector.operator, "~")
+                assert.equal(newSelector.operator, "~=")
                 assert.equal(newSelector.value, "TEST")
             })
             it("prefix", function () {
@@ -177,6 +196,145 @@
                 assert.instanceOf(newSelector, dom.Selector)
                 assert.notEqual(selector, newSelector)
                 assert.isNull(newSelector.element)
+            })
+
+            test("select", "test", "", {}, function (element) {
+                var selector = new dom.Selector({
+                    attribute: "id",
+                    value: "test"
+                })
+                assert.equal(selector.select(document.body), element)
+            })
+
+            it("select null", function () {
+                var selector = new dom.Selector({
+                    attribute: "asd",
+                    value: "qwe"
+                })
+                assert.isNull(selector.select(document.body))
+            })
+
+            test("selectAll", "test", "", {}, function (element) {
+                var child1 = element.appendChild(createElement("div", "", "test"))
+                var child2 = element.appendChild(createElement("div", "", "test"))
+                var selector = new dom.Selector({
+                    attribute: "class",
+                    value: "test"
+                })
+                assert.isArray(selector.selectAll(element))
+                assert.lengthOf(selector.selectAll(element), 2)
+                assert.equal(selector.selectAll(element)[0], child1)
+                assert.equal(selector.selectAll(element)[1], child2)
+            })
+
+            it("selectAll empty", function () {
+                var selector = new dom.Selector({
+                    attribute: "asd",
+                    value: "qwe"
+                })
+                assert.isArray(selector.selectAll(document.body))
+                assert.lengthOf(selector.selectAll(document.body), 0)
+            })
+
+            test("node", "test", "", {}, function (element) {
+                var selector = new dom.Selector({
+                    attribute: "id",
+                    value: "test"
+                })
+                assert.equal(selector.from(document.body).node(), element)
+            })
+
+            test("nodeList", "test", "", {}, function (element) {
+                var child1 = element.appendChild(createElement("div", "", "test"))
+                var child2 = element.appendChild(createElement("div", "", "test"))
+                var selector = new dom.Selector({
+                    attribute: "class",
+                    value: "test"
+                })
+                assert.isArray(selector.from(element).nodeList())
+                assert.lengthOf(selector.from(element).nodeList(), 2)
+                assert.equal(selector.from(element).nodeList()[0], child1)
+                assert.equal(selector.from(element).nodeList()[1], child2)
+            })
+
+            test("transformed nodeList", "test", "", {}, function (element) {
+                element.appendChild(createElement("div", "", "test"))
+                element.appendChild(createElement("div", "", "test"))
+                var selector = new dom.Selector({
+                    attribute: "class",
+                    value: "test"
+                })
+                var result = selector.from(element).nodeList(function (element, i) {
+                    return i
+                })
+                assert.isArray(result)
+                assert.lengthOf(result, 2)
+                assert.equal(result[0], 0)
+                assert.equal(result[1], 1)
+            })
+
+            test("construct", "", "", {}, function (element) {
+                var child = element.appendChild(createElement("div", "", "test"))
+                function Test (element) {
+                    this.element = element
+                }
+                var selector = new dom.Selector({
+                    Constructor: Test,
+                    attribute: "class",
+                    value: "test"
+                })
+                var result = selector.from(element).construct()
+                assert.instanceOf(result, Test)
+                assert.equal(result.element, child)
+            })
+
+            test("construct null", "", "", {}, function (element) {
+                function Test (element) {
+                    this.element = element
+                }
+                var selector = new dom.Selector({
+                    Constructor: Test,
+                    attribute: "class",
+                    value: "test"
+                })
+                var result = selector.from(element).construct()
+                assert.isNull(result)
+            })
+
+            test("construct multiple", "", "", {}, function (element) {
+                var child1 = element.appendChild(createElement("div", "", "test"))
+                var child2 = element.appendChild(createElement("div", "", "test"))
+                function Test (element) {
+                    this.element = element
+                }
+                var selector = new dom.Selector({
+                    Constructor: Test,
+                    multiple: true,
+                    attribute: "class",
+                    value: "test"
+                })
+                var result = selector.from(element).construct()
+                assert.isArray(result)
+                assert.lengthOf(result, 2)
+                assert.instanceOf(result[0], Test)
+                assert.instanceOf(result[1], Test)
+                assert.equal(result[0].element, child1)
+                assert.equal(result[1].element, child2)
+            })
+
+            test("construct multiple empty", "", "", {}, function (element) {
+                function Test (element) {
+                    this.element = element
+                }
+                var selector = new dom.Selector({
+                    Constructor: Test,
+                    multiple: true,
+                    attribute: "class",
+                    value: "test"
+                })
+                var result = selector.from(element).construct()
+                assert.isArray(result)
+                assert.lengthOf(result, 0)
             })
         })
     }(window.matchboxDom, window.chai)
