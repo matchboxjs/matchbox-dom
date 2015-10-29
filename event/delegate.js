@@ -1,4 +1,4 @@
-var Selector = require("./Selector")
+var Selector = require("../Selector")
 
 /**
  * Registers an event listener on an element
