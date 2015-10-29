@@ -68,9 +68,9 @@
                     var data = new DataType("data")
                     data.set(element, testValue)
                     assert.equal(data.get(element), testValue)
-                    assert.isTrue(element.hasAttribute(data.name))
+                    assert.isTrue(element.hasAttribute(data.attributeName()))
                     data.remove(element)
-                    assert.isFalse(element.hasAttribute(data.name))
+                    assert.isFalse(element.hasAttribute(data.attributeName()))
                 })
                 test("set to invalid", function (element) {
                     var data = new DataType("data")
@@ -113,6 +113,29 @@
                     assert.isTrue(data.has(element))
                 })
             }
+
+            describe("create", function () {
+                it("boolean", function () {
+                    assert.instanceOf(dom.data.create("data", true), dom.data.Boolean)
+                })
+                it("string", function () {
+                    assert.instanceOf(dom.data.create("data", "string"), dom.data.String)
+                })
+                it("number", function () {
+                    assert.instanceOf(dom.data.create("data", 0), dom.data.Number)
+                    assert.instanceOf(dom.data.create("data", 1.0), dom.data.Number)
+                })
+                it("float", function () {
+                    assert.instanceOf(dom.data.create("data", 1.1), dom.data.Float)
+                })
+                it("json", function () {
+                    assert.instanceOf(dom.data.create("data", {}), dom.data.JSON)
+                    assert.instanceOf(dom.data.create("data", []), dom.data.JSON)
+                })
+                it("null", function () {
+                    assert.isNull(dom.data.create("data"))
+                })
+            })
 
             describe("BooleanData", function () {
                 describe("true", function () {

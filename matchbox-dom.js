@@ -2,13 +2,16 @@
 module.exports = DomData
 
 function DomData (name, defaultValue, onChange) {
-  this.name = "data-"+name
+  this.name = name
   this.onChange = onChange || null
   this.default = defaultValue == null ? null : defaultValue
 }
 
 DomData.prototype.type = ""
 
+DomData.prototype.attributeName = function () {
+  return "data-"+this.name
+}
 DomData.prototype.checkType = function (value) {
   return value != null
 }
@@ -22,8 +25,9 @@ DomData.prototype.stringify = function (value) {
 }
 
 DomData.prototype.get = function (element) {
-  if (element.hasAttribute(this.name)) {
-    return this.parse(element.getAttribute(this.name))
+  var attributeName = this.attributeName()
+  if (element.hasAttribute(attributeName)) {
+    return this.parse(element.getAttribute(attributeName))
   }
 
   return this.default
@@ -34,16 +38,17 @@ DomData.prototype.set = function (element, value, context, silent) {
     throw new TypeError("Can't set DomData "+this.type+" to '"+value+"'")
   }
 
+  var attributeName = this.attributeName()
 
-  var hasValue = element.hasAttribute(this.name)
+  var hasValue = element.hasAttribute(attributeName)
   var newStringValue = this.stringify(value)
-  var prevStringValue = hasValue ? element.getAttribute(this.name) : null
+  var prevStringValue = hasValue ? element.getAttribute(attributeName) : null
 
   if (newStringValue === prevStringValue) {
     return
   }
 
-  element.setAttribute(this.name, newStringValue)
+  element.setAttribute(attributeName, newStringValue)
 
   if (!silent) {
     var onChange = this.onChange
@@ -55,19 +60,20 @@ DomData.prototype.set = function (element, value, context, silent) {
 }
 
 DomData.prototype.has = function (element) {
-  return element.hasAttribute(this.name)
+  return element.hasAttribute(this.attributeName())
 }
 
 DomData.prototype.remove = function (element, context, silent) {
-  if (!element.hasAttribute(this.name)) {
+  var attributeName = this.attributeName()
+  if (!element.hasAttribute(attributeName)) {
     return
   }
 
-  var previousValue = element.hasAttribute(this.name)
-      ? this.parse(element.getAttribute(this.name))
+  var previousValue = element.hasAttribute(attributeName)
+      ? this.parse(element.getAttribute(attributeName))
       : null
 
-  element.removeAttribute(this.name)
+  element.removeAttribute(attributeName)
 
   if (!silent) {
     var onChange = this.onChange
@@ -417,6 +423,29 @@ data.String = require("./StringData")
 data.Number = require("./NumberData")
 data.Float = require("./FloatData")
 data.JSON = require("./JSONData")
+
+data.create = function (name, value, onChange) {
+  if (value == null) {
+    return null
+  }
+
+  var type = typeof value
+
+  switch(type) {
+    case "boolean":
+      return new data.Boolean(name, value, onChange)
+    case "string":
+      return new data.String(name, value, onChange)
+    case "number":
+      // note: it fails for 1.0
+      if (value === +value && value !== (value | 0)) {
+        return new data.Float(name, value, onChange)
+      }
+      return new data.Number(name, value, onChange)
+    default:
+      return new data.JSON(name, value, onChange)
+  }
+}
 
 },{"./BooleanData":4,"./FloatData":5,"./JSONData":6,"./NumberData":7,"./StringData":8}],10:[function(require,module,exports){
 var Selector = require("../Selector")
