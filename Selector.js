@@ -82,8 +82,8 @@ Selector.prototype.from = function (element, except) {
 Selector.prototype.select = function (element, transform) {
   var result = element.querySelector(this.toString())
   if (result && this.unwantedParentSelector && this.element) {
-    var isUnwantedChild = parentFilter(this.unwantedParentSelector, this.element)
-    if (isUnwantedChild(result)) {
+    var isWantedChild = parentFilter(this.unwantedParentSelector, this.element)
+    if (!isWantedChild(result)) {
       return null
     }
   }
