@@ -159,12 +159,26 @@ function Selector (selector) {
   this.extra = selector.extra || ""
 
   this.element = selector.element || null
+  this.unwantedParentSelector = selector.unwantedParentSelector || null
 
   this.Constructor = selector.Constructor || null
   this.instantiate = selector.instantiate || null
   this.multiple = selector.multiple != null ? !!selector.multiple : false
 
   this.matcher = selector.matcher || null
+}
+
+function parentFilter (unMatchSelector, realParent) {
+  return function isUnwantedChild(el) {
+    var parent = el.parentNode
+    while (parent && parent != realParent) {
+      if (parent.matches(unMatchSelector)) {
+        return false
+      }
+      parent = parent.parentNode
+    }
+    return true
+  }
 }
 
 Selector.prototype.clone = function () {
@@ -205,14 +219,23 @@ Selector.prototype.nest = function (post, separator) {
   return s
 }
 
-Selector.prototype.from = function (element) {
+Selector.prototype.from = function (element, except) {
   var s = this.clone()
   s.element = element
+  if (except) {
+    s.unwantedParentSelector = except.toString()
+  }
   return s
 }
 
 Selector.prototype.select = function (element, transform) {
   var result = element.querySelector(this.toString())
+  if (result && this.unwantedParentSelector && this.element) {
+    var isUnwantedChild = parentFilter(this.unwantedParentSelector, this.element)
+    if (isUnwantedChild(result)) {
+      return null
+    }
+  }
   return result
       ? transform ? transform(result) : result
       : null
@@ -220,6 +243,9 @@ Selector.prototype.select = function (element, transform) {
 
 Selector.prototype.selectAll = function (element, transform) {
   var result = element.querySelectorAll(this.toString())
+  if (this.unwantedParentSelector && this.element) {
+    result = [].filter.call(result, parentFilter(this.unwantedParentSelector, this.element))
+  }
   return transform ? [].map.call(result, transform) : [].slice.call(result)
 }
 

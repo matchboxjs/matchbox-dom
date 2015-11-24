@@ -93,10 +93,10 @@
                 test("set to valid", function (element) {
                     var data = new dom.data.JSON("data")
                     data.set(element, testValue)
-                    assert.equal(element.hasAttribute(data.name), true)
-                    assert.equal(element.getAttribute(data.name), JSON.stringify(testValue))
+                    assert.equal(element.hasAttribute(data.attributeName()), true)
+                    assert.equal(element.getAttribute(data.attributeName()), JSON.stringify(testValue))
                     data.remove(element)
-                    assert.equal(element.hasAttribute(data.name), false)
+                    assert.equal(element.hasAttribute(data.attributeName()), false)
                 })
                 test("set to invalid", function (element) {
                     var data = new dom.data.JSON("data")
