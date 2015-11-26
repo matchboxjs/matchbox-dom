@@ -91,7 +91,7 @@ function matchCapturePath( selector, el, e, transform, context ){
       delegateElement = findParent(selector[i], el, e)
       if( !delegateElement ) return null
       if (typeof transform == "function") {
-        delegateElement = transform(context, selector, delegateElement)
+        delegateElement = transform(context, selector[i], delegateElement)
       }
       delegateElements.push(delegateElement)
     }
