@@ -1,7 +1,7 @@
 {
   "name": "matchbox-dom",
-  "version": "0.6.4",
-  "description": "DOM utilities",
+  "version": "0.7.0",
+  "description": "Matchbox View & dom library",
   "main": "index.js",
   "scripts": {
     "test": "ELECTRON_PATH=./node_modules/.bin/electron ./node_modules/.bin/electron-mocha --renderer --recursive --bail --ui bdd ./test/"
