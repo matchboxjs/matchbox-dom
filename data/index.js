@@ -6,14 +6,14 @@ data.Number = require("./NumberData")
 data.Float = require("./FloatData")
 data.JSON = require("./JSONData")
 
-data.create = function (name, value, onChange) {
+data.create = function(name, value, onChange) {
   if (value == null) {
     return null
   }
 
   var type = typeof value
 
-  switch(type) {
+  switch (type) {
     case "boolean":
       return new data.Boolean(name, value, onChange)
     case "string":

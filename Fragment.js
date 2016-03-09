@@ -1,14 +1,14 @@
 module.exports = Fragment
 
-function Fragment (fragment) {
+function Fragment(fragment) {
   fragment = fragment || {}
   this.html = fragment.html || ""
   this.first = fragment.first == undefined || !!fragment.first
   this.timeout = fragment.timeout || 2000
 }
 
-Fragment.prototype.create = function (html) {
-  var temp = document.createElement('div')
+Fragment.prototype.create = function(html) {
+  var temp = document.createElement("div")
 
   temp.innerHTML = html || this.html
 
@@ -21,27 +21,27 @@ Fragment.prototype.create = function (html) {
     fragment.appendChild(temp.firstChild)
   }
 
-  return fragment;
+  return fragment
 }
 
-Fragment.prototype.compile = function (html, options, cb) {
-  setTimeout(function () {
+Fragment.prototype.compile = function(html, options, cb) {
+  setTimeout(function() {
     cb(null, html)
   }, 4)
 }
 
-Fragment.prototype.render = function (context, options) {
+Fragment.prototype.render = function(context, options) {
   var fragment = this
   context = context || {}
 
-  return new Promise(function (resolve, reject) {
+  return new Promise(function(resolve, reject) {
     var resolved = false
-    var id = setTimeout(function () {
+    var id = setTimeout(function() {
       reject(new Error("Render timed out"))
     }, fragment.timeout)
 
     try {
-      fragment.compile(context, options, function (err, rendered) {
+      fragment.compile(context, options, function(err, rendered) {
         clearTimeout(id)
         if (resolved) return
 
