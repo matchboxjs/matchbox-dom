@@ -10,18 +10,18 @@ var Selector = require("../Selector")
  * */
 module.exports = delegate
 
-function delegate( options ){
+function delegate(options) {
   var element = options.element
-    , event = options.event
-    , capture = !!options.capture || false
-    , context = options.context || element
-    , transform = options.transform || null
+  var event = options.event
+  var capture = !!options.capture || false
+  var context = options.context || element
+  var transform = options.transform || null
 
-  if( !element ){
+  if (!element) {
     console.log("Can't delegate undefined element")
     return null
   }
-  if( !event ){
+  if (!event) {
     console.log("Can't delegate undefined event")
     return null
   }
@@ -35,33 +35,37 @@ function delegate( options ){
 /**
  * Returns a delegator that can be used as an event listener.
  * The delegator has static methods which can be used to register handlers.
+ *
+ * @param {*} context
+ * @param {Function} transform
+ * @return {Function}
  * */
-function createHandler( context, transform ){
+function createHandler(context, transform) {
   var matchers = []
 
-  function delegatedHandler( e ){
+  function delegatedHandler(e) {
     var l = matchers.length
-    if( !l ){
+    if (!l) {
       return true
     }
 
     var el = this
-        , i = -1
-        , handler
-        , selector
-        , delegateElement
-        , stopPropagation
-        , args
+    var i = -1
+    var handler
+    var selector
+    var delegateElement
+    var stopPropagation
+    var args
 
-    while( ++i < l ){
+    while (++i < l) {
       args = matchers[i]
       handler = args[0]
       selector = args[1]
 
       delegateElement = matchCapturePath(selector, el, e, transform, context)
-      if( delegateElement && delegateElement.length ) {
-        stopPropagation = false === handler.apply(context, [e].concat(delegateElement))
-        if( stopPropagation ) {
+      if (delegateElement && delegateElement.length) {
+        stopPropagation = handler.apply(context, [e].concat(delegateElement)) === false
+        if (stopPropagation) {
           return false
         }
       }
@@ -72,8 +76,12 @@ function createHandler( context, transform ){
 
   /**
    * Registers a handler with a target finder logic
+   *
+   * @param {String|String[]} selector
+   * @param {Function} handler
+   * @return {Function} delegatedHandler
    * */
-  delegatedHandler.match = function( selector, handler ){
+  delegatedHandler.match = function(selector, handler) {
     matchers.push([handler, selector])
     return delegatedHandler
   }
@@ -81,15 +89,23 @@ function createHandler( context, transform ){
   return delegatedHandler
 }
 
-function matchCapturePath( selector, el, e, transform, context ){
+/**
+ * @param {String|String[]} selector
+ * @param {HTMLElement} el
+ * @param {Event} e
+ * @param {Function} transform
+ * @param {*} context
+ * @return {*} delegatedHandler
+ * */
+function matchCapturePath(selector, el, e, transform, context) {
   var delegateElements = []
   var delegateElement = null
-  if( Array.isArray(selector) ){
+  if (Array.isArray(selector)) {
     var i = -1
     var l = selector.length
-    while( ++i < l ){
+    while (++i < l) {
       delegateElement = findParent(selector[i], el, e)
-      if( !delegateElement ) return null
+      if (!delegateElement) return null
       if (typeof transform == "function") {
         delegateElement = transform(context, selector[i], delegateElement)
       }
@@ -98,7 +114,7 @@ function matchCapturePath( selector, el, e, transform, context ){
   }
   else {
     delegateElement = findParent(selector, el, e)
-    if( !delegateElement ) return null
+    if (!delegateElement) return null
     if (typeof transform == "function") {
       delegateElement = transform(context, selector, delegateElement)
     }
@@ -109,22 +125,27 @@ function matchCapturePath( selector, el, e, transform, context ){
 
 /**
  * Check if the target or any of its parent matches a selector
+ *
+ * @param {String|Function} selector
+ * @param {HTMLElement} el
+ * @param {Event} e
+ * @return {*}
  * */
-function findParent( selector, el, e ){
+function findParent(selector, el, e) {
   var target = e.target
   if (selector instanceof Selector) {
     selector = selector.toString()
   }
-  switch( typeof selector ){
+  switch (typeof selector) {
     case "string":
-      while( target && target != el ){
-        if( target.matches && target.matches(selector) ) return target
+      while (target && target != el) {
+        if (target.matches && target.matches(selector)) return target
         target = target.parentNode
       }
       break
     case "function":
-      while( target && target != el ){
-        if( selector.call(el, target) ) return target
+      while (target && target != el) {
+        if (selector.call(el, target)) return target
         target = target.parentNode
       }
       break

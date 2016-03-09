@@ -3,7 +3,7 @@ module.exports = missclick
 var elements = []
 var listeners = []
 
-function missclick (element, cb) {
+function missclick(element, cb) {
   if (isRegistered(element)) {
     return
   }
@@ -11,12 +11,12 @@ function missclick (element, cb) {
   register(element, cb)
 }
 
-function isRegistered (element) {
+function isRegistered(element) {
   return !!~elements.indexOf(element)
 }
 
-function register (element, cb) {
-  function listener (e) {
+function register(element, cb) {
+  function listener(e) {
     if (!isRegistered(element)) {
       removeListener()
     }
@@ -26,7 +26,7 @@ function register (element, cb) {
     }
   }
 
-  function removeListener () {
+  function removeListener() {
     document.body.removeEventListener("click", listener, false)
     if (isRegistered(element)) {
       elements.splice(elements.indexOf(element), 1)
@@ -40,7 +40,7 @@ function register (element, cb) {
   listeners.push(removeListener)
 }
 
-missclick.remove = function (element) {
+missclick.remove = function(element) {
   if (isRegistered(element)) {
     listeners[elements.indexOf(element)]()
   }

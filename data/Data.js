@@ -1,6 +1,6 @@
 module.exports = DomData
 
-function DomData (name, defaultValue, onChange) {
+function DomData(name, defaultValue, onChange) {
   this.name = name
   this.onChange = onChange || null
   this.default = defaultValue == null ? null : defaultValue
@@ -8,22 +8,22 @@ function DomData (name, defaultValue, onChange) {
 
 DomData.prototype.type = ""
 
-DomData.prototype.attributeName = function () {
-  return "data-"+this.name
+DomData.prototype.attributeName = function() {
+  return "data-" + this.name
 }
-DomData.prototype.checkType = function (value) {
+DomData.prototype.checkType = function(value) {
   return value != null
 }
 
-DomData.prototype.parse = function (value) {
+DomData.prototype.parse = function(value) {
   return value
 }
 
-DomData.prototype.stringify = function (value) {
-  return ""+value
+DomData.prototype.stringify = function(value) {
+  return "" + value
 }
 
-DomData.prototype.get = function (element) {
+DomData.prototype.get = function(element) {
   var attributeName = this.attributeName()
   if (element.hasAttribute(attributeName)) {
     return this.parse(element.getAttribute(attributeName))
@@ -32,9 +32,9 @@ DomData.prototype.get = function (element) {
   return this.default
 }
 
-DomData.prototype.set = function (element, value, context, silent) {
+DomData.prototype.set = function(element, value, context, silent) {
   if (!this.checkType(value)) {
-    throw new TypeError("Can't set DomData "+this.type+" to '"+value+"'")
+    throw new TypeError("Can't set DomData " + this.type + " to '" + value + "'")
   }
 
   var attributeName = this.attributeName()
@@ -58,11 +58,11 @@ DomData.prototype.set = function (element, value, context, silent) {
   }
 }
 
-DomData.prototype.has = function (element) {
+DomData.prototype.has = function(element) {
   return element.hasAttribute(this.attributeName())
 }
 
-DomData.prototype.remove = function (element, context, silent) {
+DomData.prototype.remove = function(element, context, silent) {
   var attributeName = this.attributeName()
   if (!element.hasAttribute(attributeName)) {
     return
@@ -81,4 +81,3 @@ DomData.prototype.remove = function (element, context, silent) {
     }
   }
 }
-
