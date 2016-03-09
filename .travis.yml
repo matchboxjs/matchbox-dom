@@ -3,7 +3,4 @@ language: node_js
 node_js:
   - "4.0"
 
-before_install:
-  - 'npm install -g npm@1.4.28 && npm install -g npm'
-
 sudo: false
