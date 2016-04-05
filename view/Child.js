@@ -26,14 +26,12 @@ function Child(child) {
   this.autoselect = child.autoselect == undefined ? false : child.autoselect
   this.property = child.property || this.value
   this.lookup = child.lookup || null
-  this.name = child.name || this.value
 }
 
 inherit(Child, Selector)
 
-Child.prototype.initialize = function(property, childName) {
-  this.property = property
-  this.name = childName
+Child.prototype.initialize = function(childProperty) {
+  this.property = childProperty
 }
 
 Child.prototype.clone = function() {

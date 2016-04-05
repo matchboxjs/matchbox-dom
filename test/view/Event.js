@@ -3,7 +3,7 @@ var view = require("../../view")
 
 describe("Event", function() {
   it("event type", function() {
-    var event = new view.Event("click")
+    var event = new view.Event("click", function() {})
     assert.equal(event.type, "click")
   })
   it("event type", function() {
@@ -38,7 +38,12 @@ describe("Event", function() {
     }
 
     var targets = ["test1", "test2"]
-    var event = new view.Event("click", targets, false, handler)
+    var event = new view.Event({
+      type: "click",
+      target: targets,
+      capture: false,
+      handler: handler
+    })
     assert.equal(event.type, "click")
     assert.equal(event.target, targets)
     assert.equal(event.capture, false)
@@ -49,7 +54,13 @@ describe("Event", function() {
     }
 
     var targets = ["test1", "test2"]
-    var event = new view.Event("click", targets, false, true, handler)
+    var event = new view.Event({
+      type: "click",
+      target: targets,
+      capture: false,
+      once: true,
+      handler: handler
+    })
     assert.equal(event.type, "click")
     assert.equal(event.target, targets)
     assert.equal(event.capture, false)

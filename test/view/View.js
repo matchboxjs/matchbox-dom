@@ -130,8 +130,11 @@ describe("View", function() {
       var child = createViewElement("child")
       element.appendChild(child)
       var view = new (View.extend({
+        children: {
+          child: "child"
+        },
         events: {
-          test: new viewModule.Event("click", new viewModule.Child("child").toString(), function(e, arg1) {
+          test: new viewModule.Event("click", "child", function(e, arg1) {
             assert.equal(child, arg1)
             done()
           })
@@ -145,8 +148,12 @@ describe("View", function() {
       element.appendChild(child1)
       child1.appendChild(child2)
       var view = new (View.extend({
+        children: {
+          child1: "child1",
+          child2: "child2"
+        },
         events: {
-          test: new viewModule.Event("click", [new viewModule.Child("child1").toString(), new viewModule.Child("child2").toString()], function(e, arg1, arg2) {
+          test: new viewModule.Event("click", ["child1", "child2"], function(e, arg1, arg2) {
             assert.equal(child1, arg1)
             assert.equal(child2, arg2)
             done()
@@ -154,103 +161,6 @@ describe("View", function() {
         }
       }))(element)
       dispatch(child2, "click")
-    })
-  })
-
-  describe("Action", function() {
-    test("simple action", function(element, done) {
-      var child = createViewElement("child")
-      child.dataset.action = "test"
-      element.appendChild(child)
-      var view = new (View.extend({
-        actions: {
-          test: new viewModule.Action("click", function(e, arg1) {
-            assert.equal(child, arg1)
-            done()
-          })
-        }
-      }))(element)
-      dispatch(child, "click")
-    })
-    test("targeted action", function(element, done) {
-      var child1 = createViewElement("child1")
-      var child2 = createViewElement("child2")
-      element.appendChild(child1)
-      child1.appendChild(child2)
-      child2.dataset.action = "test"
-      var view = new (View.extend({
-        actions: {
-          test: new viewModule.Action("click", ["child1"], function(e, arg1, arg2) {
-            assert.equal(child1, arg1)
-            assert.equal(child2, arg2)
-            done()
-          })
-        }
-      }))(element)
-      dispatch(child2, "click")
-    })
-    test("child targeted action", function(element, done) {
-      var child1 = createViewElement("test:child1")
-      var child2 = createViewElement("test:child2")
-      element.appendChild(child1)
-      child1.appendChild(child2)
-      child2.dataset.action = "test:test"
-      var view = new (View.extend({
-        viewName: "test",
-        actions: {
-          test: new viewModule.Action("click", [":child1"], function(e, arg1, arg2) {
-            assert.equal(child1, arg1)
-            assert.equal(child2, arg2)
-            done()
-          })
-        }
-      }))(element)
-      dispatch(child2, "click")
-    })
-    test("View child targeted action", function(element, done) {
-      var child1 = createViewElement("test:child1")
-      var child2 = createViewElement("test:child2")
-      element.appendChild(child1)
-      child1.appendChild(child2)
-      child2.dataset.action = "test:test"
-      var view = new (View.extend({
-        viewName: "test",
-        children: {
-          child1: viewModule.Child({autoselect: true, Constructor: View})
-        },
-        actions: {
-          test: new viewModule.Action("click", [":child1"], function(e, arg1, arg2) {
-            assert.instanceOf(arg1, View)
-            assert.equal(this.child1, arg1)
-            assert.equal(child1, arg1.element)
-            assert.equal(child2, arg2)
-            done()
-          })
-        }
-      }))(element)
-      dispatch(child2, "click")
-    })
-    test("View lookup", function(element, done) {
-      var child = createViewElement("test:child1")
-      child.dataset.action = "test:test"
-      element.appendChild(child)
-      var view = new (View.extend({
-        viewName: "test",
-        children: {
-          child1: viewModule.Child({autoselect: true, Constructor: View})
-        },
-        actions: {
-          test: new viewModule.Action({
-            type: "click", lookup: "child1", handler: function(e, arg1) {
-              assert.instanceOf(arg1, View)
-              assert.equal(this.child1, arg1)
-              assert.equal(child, arg1.element)
-              done()
-            }
-          })
-        }
-      }))(element)
-      dispatch(child, "click")
     })
   })
 
@@ -397,12 +307,24 @@ describe("View", function() {
       done()
     })
     test("name override", function(element, done) {
-      var child = createViewElement("test:other-child")
+      var child = createViewElement("other-child")
       element.appendChild(child)
       var el = new (View.extend({
         viewName: "test",
         children: {
           child: new viewModule.Child("other-child")
+        }
+      }))(element)
+      assert.equal(el.findChild("child"), child)
+      done()
+    })
+    test("nested name override", function(element, done) {
+      var child = createViewElement("test:other-child")
+      element.appendChild(child)
+      var el = new (View.extend({
+        viewName: "test",
+        children: {
+          child: new viewModule.Child(":other-child")
         }
       }))(element)
       assert.equal(el.findChild("child"), child)
@@ -441,7 +363,53 @@ describe("View", function() {
       assert.equal(el.findChild("child").element, child)
       done()
     })
-    it("nested children", function() {
+    it("nested  children 1", function() {
+      var el1 = createViewElement("test")
+      var el2 = createViewElement("test2")
+      var el1child = createViewElement("child")
+      var el2child = createViewElement("child")
+      el1.appendChild(el1child)
+      el2.appendChild(el2child)
+      el1child.appendChild(el2)
+
+      var view = new (View.extend({
+        viewName: "test",
+        children: {
+          child: new viewModule.Child({
+            value: "child",
+            multiple: true
+          })
+        }
+      }))(el1)
+
+      var children = view.findChild("child")
+      assert.lengthOf(children, 2)
+      assert.equal(children[0], el1child)
+    })
+    it("nested children 2", function() {
+      var el1 = createViewElement("test")
+      var el2 = createViewElement("test")
+      var el1child = createViewElement("child")
+      var el2child = createViewElement("child")
+      el1.appendChild(el1child)
+      el2.appendChild(el2child)
+      el1child.appendChild(el2)
+
+      var view = new (View.extend({
+        viewName: "test",
+        children: {
+          child: new viewModule.Child({
+            value: "child",
+            multiple: true
+          })
+        }
+      }))(el1)
+
+      var children = view.findChild("child")
+      assert.lengthOf(children, 1)
+      assert.equal(children[0], el1child)
+    })
+    it("scoped nested children 1", function() {
       var el1 = createViewElement("test")
       var el2 = createViewElement("test")
       var el1child = createViewElement("test:child")
@@ -454,6 +422,30 @@ describe("View", function() {
         viewName: "test",
         children: {
           child: new viewModule.Child({
+            value: ":child",
+            multiple: true
+          })
+        }
+      }))(el1)
+
+      var children = view.findChild("child")
+      assert.lengthOf(children, 1)
+      assert.equal(children[0], el1child)
+    })
+    it("scoped nested children 2", function() {
+      var el1 = createViewElement("test")
+      var el2 = createViewElement("test2")
+      var el1child = createViewElement("test:child")
+      var el2child = createViewElement("test2:child")
+      el1.appendChild(el1child)
+      el2.appendChild(el2child)
+      el1child.appendChild(el2)
+
+      var view = new (View.extend({
+        viewName: "test",
+        children: {
+          child: new viewModule.Child({
+            value: ":child",
             multiple: true
           })
         }

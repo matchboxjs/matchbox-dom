@@ -22,6 +22,24 @@ function Selector(selector) {
   this.matcher = selector.matcher || null
 }
 
+Selector.stripNestShorthand = function(selector) {
+  if (Selector.isNestShorthand(selector)) {
+    return selector.substr(1)
+  }
+  return selector
+}
+
+Selector.isNestShorthand = function(selector) {
+  return selector[0] == Selector.DEFAULT_NEST_SEPARATOR
+}
+
+Selector.completeNestShorthand = function(selector, prefix) {
+  if (Selector.isNestShorthand(selector)) {
+    return prefix ? prefix + selector : Selector.stripNestShorthand(selector)
+  }
+  return selector
+}
+
 function parentFilter(unMatchSelector, realParent) {
   return function isUnwantedChild(el) {
     var parent = el.parentNode
@@ -91,8 +109,8 @@ Selector.prototype.select = function(element, transform) {
     }
   }
   return result
-      ? transform ? transform(result) : result
-      : null
+    ? transform ? transform(result) : result
+    : null
 }
 
 Selector.prototype.selectAll = function(element, transform) {
@@ -111,10 +129,13 @@ Selector.prototype.nodeList = function(transform) {
   return this.selectAll(this.element, transform)
 }
 
-Selector.prototype.construct = function() {
+Selector.prototype.construct = function(context) {
   var Constructor = this.Constructor
   var instantiate = this.instantiate || function(element) {
-    return new Constructor(element)
+      return new Constructor(element)
+    }
+  if (typeof instantiate == "function") {
+    instantiate = instantiate.bind(context)
   }
   if (this.multiple) {
     return this.nodeList().map(instantiate)
@@ -122,9 +143,9 @@ Selector.prototype.construct = function() {
   return this.node(instantiate)
 }
 
-Selector.prototype.find = function() {
+Selector.prototype.find = function(context) {
   if (this.Constructor || this.instantiate) {
-    return this.construct()
+    return this.construct(context)
   }
   if (this.multiple) {
     return this.nodeList()
@@ -150,8 +171,8 @@ Selector.prototype.toString = function() {
       break
     default:
       value = value === "" || value === true || value === false || value == null
-          ? ""
-          : '"' + value + '"'
+        ? ""
+        : '"' + value + '"'
       var operator = value ? this.operator || "=" : ""
       string = "[" + attribute + operator + value + "]"
   }

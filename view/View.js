@@ -12,12 +12,10 @@ var DomData = require("../data/Data")
 var Selector = require("../Selector")
 var Fragment = require("../Fragment")
 var EventInit = require("./EventInit")
-var ActionInit = require("./ActionInit")
 var ModifierInit = require("./ModifierInit")
 var Event = require("./Event")
 var Modifier = require("./Modifier")
 var Child = require("./Child")
-var Action = require("./Action")
 
 module.exports = factory({
   include: [Radio],
@@ -33,32 +31,11 @@ module.exports = factory({
       if (!(init instanceof EventInit)) {
         init = new EventInit(init)
       }
+
       event = new Event(init)
-
-      if (typeof event.handler == "string" && typeof view[event.handler] == "function") {
-        event.handler = view[event.handler].bind(view)
-      }
-
-      if (view.viewName) {
-        event.initialize(view, view.viewName)
-      }
+      event.initialize(view)
 
       view._events[name] = event
-    }),
-    actions: new InstanceExtension(function(view, name, init) {
-      if (!(init instanceof ActionInit)) {
-        init = new ActionInit(init)
-      }
-
-      var action = new Action(init)
-      action.initialize(name, view.viewName)
-
-      if (typeof action.handler == "string" && typeof view[action.handler] == "function") {
-        action.handler = function() {
-          return view[action.handler].apply(view, arguments)
-        }
-      }
-      view._actions[name] = action
     }),
     dataset: new CacheExtension(function(prototype, name, data) {
       if (!(data instanceof DomData)) {
@@ -74,21 +51,19 @@ module.exports = factory({
       }
       view._modifiers[name] = new Modifier(init)
     }),
-    children: new CacheExtension(function(prototype, name, child) {
+    children: new CacheExtension(function(prototype, childProperty, child) {
       if (!(child instanceof Selector)) {
         child = new Child(child)
       }
 
       if (child instanceof Child) {
-        child.initialize(name, child.value || name)
+        child.property = childProperty
       }
 
-      if (prototype.viewName) {
-        if (child instanceof Child) {
-          return child.contains(child.name).prefix(prototype.viewName)
-        }
-      }
-      return child.contains(child.name)
+      var viewValue = child.value && Selector.completeNestShorthand(child.value, prototype.viewName)
+      return viewValue
+        ? child.contains(viewValue)
+        : child
     }),
     fragments: new CacheExtension(function(prototype, name, fragment) {
       if (!(fragment instanceof Fragment)) {
@@ -110,7 +85,6 @@ module.exports = factory({
     Radio.call(this)
     define.value(this, "_events", {})
     define.value(this, "_models", {})
-    define.value(this, "_actions", {})
     define.value(this, "_modifiers", {})
     define.writable.value(this, "_element", null)
     define.writable.value(this, "currentLayout", "")
@@ -143,15 +117,14 @@ module.exports = factory({
 
   prototype: {
     viewName: "",
+
+    // Callbacks
+
     onElementChange: function(element, previous) {
       var view = this
       forIn(this._events, function(name, event) {
         if (previous) event.unRegister(previous)
         if (element) event.register(element, view)
-      })
-      forIn(this._actions, function(name, action) {
-        if (previous) action.unRegisterEvent(previous)
-        if (element) action.registerEvent(element, view)
       })
       forIn(this._modifiers, function(name, modifier) {
         modifier.reset(element, view)
@@ -172,6 +145,9 @@ module.exports = factory({
       })
     },
     onLayoutChange: function(layout, previous) {},
+
+    // Layout
+
     changeLayout: function(layout) {
       if (this.currentLayout == layout) {
         return Promise.resolve()
@@ -191,6 +167,23 @@ module.exports = factory({
         view.onLayoutChange(previous, layout)
       })
     },
+
+    // Events
+
+    registerEvent: function(eventName) {
+      var event = this.event[eventName]
+      if (!(event instanceof Event)) {
+        return
+      }
+      event.register(this.element, this)
+    },
+    unRegisterEvent: function(eventName) {
+      var event = this.event[eventName]
+      if (!(event instanceof Event)) {
+        return
+      }
+      event.unRegister(this.element)
+    },
     dispatch: function(type, detail, def) {
       var definition = defaults(def, {
         detail: detail || null,
@@ -200,6 +193,9 @@ module.exports = factory({
       })
       return this.element.dispatchEvent(new window.CustomEvent(type, definition))
     },
+
+    // Data
+
     getData: function(name) {
       var data = this.dataset[name]
       if (data) {
@@ -226,6 +222,9 @@ module.exports = factory({
       }
       return false
     },
+
+    // Classnames
+
     setModifier: function(name, value) {
       if (this._modifiers[name] && this.element) {
         return this._modifiers[name].set(value, this.element, this)
@@ -241,6 +240,9 @@ module.exports = factory({
         return this._modifiers[name].remove(this.element, this)
       }
     },
+
+    // Model
+
     getModel: function(name) {
       name = name || "default"
       var model = this._models[name]
@@ -257,6 +259,7 @@ module.exports = factory({
       }
       this._models[name] = model
     },
+
     setupElement: function(root) {
       root = root || document.body
       if (root && this.elementSelector) {
@@ -265,22 +268,31 @@ module.exports = factory({
 
       return this
     },
+
+    // Children
+
     getChildView: function(childProperty, element) {
       var child = this.children[childProperty]
       var member = this[childProperty]
 
-      if (child && child.multiple || Array.isArray(member)) {
+      if (!child) {
+        return member
+      }
+
+      if (child.lookup) {
+        return this.getChildView(child.lookup, element)
+      }
+
+      if (child.multiple && Array.isArray(member)) {
         var l = member.length
         while (l--) {
-          if (member[l].element == element) {
+          if (member[l] == element || member[l].element == element) {
             return member[l]
           }
         }
-
-        return null
       }
 
-      return member
+      return null
     },
     findChild: function(property) {
       var child
@@ -292,7 +304,7 @@ module.exports = factory({
       }
 
       if (child) {
-        var element = child.from(this.element, this.elementSelector).find()
+        var element = child.from(this.element, this.elementSelector).find(this)
         if (element && child.lookup) {
           return this.getChildView(child.lookup, element)
         }
