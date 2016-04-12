@@ -53,7 +53,7 @@ function ClassName(defaultValue, values, animationDuration, onChange, modifInit)
 
   this.default = defaultValue
   this.values = values
-  this.onchange = onChange
+  this.onChange = onChange
   this.animationDuration = animationDuration
   this.value = null
   this.timerId = null
@@ -161,8 +161,8 @@ function callOnChange(modifier, context, previousValue, newValue) {
       resolve()
     }
   }).then(function() {
-    if (typeof modifier.onchange == "function") {
-      return modifier.onchange.call(context, previousValue, newValue)
+    if (typeof modifier.onChange == "function") {
+      return modifier.onChange.call(context, previousValue, newValue)
     }
   })
 }
