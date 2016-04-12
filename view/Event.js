@@ -4,15 +4,53 @@ var Child = require("./Child")
 
 module.exports = Event
 
-function Event(eventInit, event, target, handler) {
-  this.type = eventInit.type
-  this.target = eventInit.target
-  this.once = !!eventInit.once
-  this.capture = !!eventInit.capture
-  this.handler = eventInit.handler
-  this.transform = eventInit.transform
+function Event(event, target, handler) {
+  if (!(this instanceof Event)) {
+    switch (arguments.length) {
+      case 1:
+        return new Event(event)
+      case 2:
+        return new Event({
+          type: event,
+          handler: target
+        })
+      case 3:
+        return new Event({
+          type: event,
+          target: target,
+          handler: handler
+        })
+    }
+  }
+
+  switch (arguments.length) {
+    case 2:
+      event = {
+        type: event,
+        handler: target
+      }
+      break
+    case 3:
+      event = {
+        type: event,
+        target: target,
+        handler: handler
+      }
+      break
+  }
+
+  this.type = event.type
+  this.target = event.target
+  this.once = !!event.once
+  this.capture = !!event.capture
+  this.handler = event.handler
+  this.transform = event.transform
+  this.element = event.element
   this.proxy = this.handler
-  this.element = eventInit.element
+}
+
+Event.prototype.clone = function() {
+  return new Event(this)
 }
 
 Event.prototype.initialize = function(view) {
@@ -76,7 +114,7 @@ Event.prototype.register = function(element, context) {
 }
 Event.prototype.unRegister = function(element, removeElement) {
   element = element || this.element
-  removeElement = removeElement === false ? false : true
+  removeElement = removeElement !== false
   if (this.proxy) {
     element.removeEventListener(this.type, this.proxy, this.capture)
     if (removeElement) {

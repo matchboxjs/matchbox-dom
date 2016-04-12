@@ -11,10 +11,8 @@ var domData = require("../data")
 var DomData = require("../data/Data")
 var Selector = require("../Selector")
 var Fragment = require("../Fragment")
-var EventInit = require("./EventInit")
-var ModifierInit = require("./ModifierInit")
 var Event = require("./Event")
-var Modifier = require("./Modifier")
+var ClassName = require("./ClassName")
 var Child = require("./Child")
 
 module.exports = factory({
@@ -22,17 +20,19 @@ module.exports = factory({
 
   extensions: {
     viewName: new PrototypeExtension({loop: false}, function(prototype, property, value) {
-      prototype[property] = value
+      prototype.viewName = value
+
+      if (prototype.viewName) {
+        prototype.elementSelector = new Child(prototype.viewName)
+      }
     }),
     layouts: new CacheExtension(),
     models: new CacheExtension(),
     events: new InstanceExtension(function(view, name, init) {
-      var event
-      if (!(init instanceof EventInit)) {
-        init = new EventInit(init)
-      }
+      var event = init instanceof Event
+        ? init.clone()
+        : new Event(init)
 
-      event = new Event(init)
       event.initialize(view)
 
       view._events[name] = event
@@ -45,11 +45,11 @@ module.exports = factory({
 
       return data
     }),
-    modifiers: new InstanceExtension(function(view, name, init) {
-      if (!(init instanceof ModifierInit)) {
-        init = new ModifierInit(init)
-      }
-      view._modifiers[name] = new Modifier(init)
+    classList: new InstanceExtension(function(view, name, init) {
+      init = init instanceof ClassName
+        ? init.clone()
+        : new ClassName(init)
+      view._classList[name] = new ClassName(init)
     }),
     children: new CacheExtension(function(prototype, childProperty, child) {
       if (!(child instanceof Selector)) {
@@ -77,7 +77,7 @@ module.exports = factory({
   models: {},
   events: {},
   dataset: {},
-  modifiers: {},
+  classList: {},
   fragments: {},
   children: {},
 
@@ -85,7 +85,7 @@ module.exports = factory({
     Radio.call(this)
     define.value(this, "_events", {})
     define.value(this, "_models", {})
-    define.value(this, "_modifiers", {})
+    define.value(this, "_classList", {})
     define.writable.value(this, "_element", null)
     define.writable.value(this, "currentLayout", "")
     View.initialize(this)
@@ -105,18 +105,12 @@ module.exports = factory({
         this._element = element
         this.onElementChange(element, previous)
       }
-    },
-    elementSelector: {
-      get: function() {
-        if (this.viewName) {
-          return new Child(this.viewName)
-        }
-      }
     }
   },
 
   prototype: {
     viewName: "",
+    elementSelector: null,
 
     // Callbacks
 
@@ -126,7 +120,7 @@ module.exports = factory({
         if (previous) event.unRegister(previous)
         if (element) event.register(element, view)
       })
-      forIn(this._modifiers, function(name, modifier) {
+      forIn(this._classList, function(name, modifier) {
         modifier.reset(element, view)
       })
       forIn(this.dataset, function(name, data) {
@@ -223,21 +217,39 @@ module.exports = factory({
       return false
     },
 
-    // Classnames
+    // ClassNames
 
-    setModifier: function(name, value) {
-      if (this._modifiers[name] && this.element) {
-        return this._modifiers[name].set(value, this.element, this)
+    getClassName: function(name) {
+      if (this._classList[name]) {
+        return this._classList[name].get()
       }
     },
-    getModifier: function(name) {
-      if (this._modifiers[name]) {
-        return this._modifiers[name].get()
+    setClassName: function(name, value) {
+      if (this._classList[name] && this.element) {
+        return this._classList[name].set(value, this.element, this)
       }
     },
-    removeModifier: function(name) {
-      if (this._modifiers[name]) {
-        return this._modifiers[name].remove(this.element, this)
+    hasClassName: function(name) {
+      if (this._classList[name]) {
+        return this._classList[name].hasValue()
+      }
+    },
+    isClassNameSet: function(name) {
+      if (this._classList[name]) {
+        return this._classList[name].isSet(this.element)
+      }
+    },
+    isClassNameValue: function(name, value) {
+      return this.isClassNameSet(name) && this.getClassName(name) == value
+    },
+    removeClassName: function(name) {
+      if (this._classList[name]) {
+        return this._classList[name].remove(this.element, this)
+      }
+    },
+    toggleClassName: function(name) {
+      if (this._classList[name]) {
+        return this._classList[name].toggle(this.element, this)
       }
     },
 
