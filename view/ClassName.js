@@ -100,7 +100,9 @@ ClassName.prototype.toggle = function(element, context) {
     return this.remove(element, context)
   }
 
-  var value = this.toggledValue
+  var value = this.toggledValue == null
+    ? this.values[0]
+    : this.toggledValue
   this.toggledValue = null
 
   return this.set(value, element, context)
