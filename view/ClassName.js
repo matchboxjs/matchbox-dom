@@ -1,8 +1,8 @@
-module.exports = Modifier
+module.exports = ClassName
 
-function Modifier(defaultValue, values, animationDuration, onChange, modifInit) {
-  if (!(this instanceof Modifier)) {
-    return new Modifier(defaultValue)
+function ClassName(defaultValue, values, animationDuration, onChange, modifInit) {
+  if (!(this instanceof ClassName)) {
+    return new ClassName(defaultValue)
   }
 
   switch (arguments.length) {
@@ -60,11 +60,11 @@ function Modifier(defaultValue, values, animationDuration, onChange, modifInit) 
   this.toggledValue = null
 }
 
-Modifier.prototype.clone = function() {
+ClassName.prototype.clone = function() {
   return new this.constructor(this)
 }
 
-Modifier.prototype.reset = function(element, context) {
+ClassName.prototype.reset = function(element, context) {
   var currentClassName = null
   var hasInitialValue = this.values.some(function(value) {
     if (value && element.classList.contains(value)) {
@@ -82,19 +82,19 @@ Modifier.prototype.reset = function(element, context) {
   }
 }
 
-Modifier.prototype.get = function() {
+ClassName.prototype.get = function() {
   return this.value
 }
 
-Modifier.prototype.hasValue = function() {
+ClassName.prototype.hasValue = function() {
   return this.value != null
 }
 
-Modifier.prototype.isSet = function(element) {
+ClassName.prototype.isSet = function(element) {
   return this.value != null && element.classList.contains(this.value)
 }
 
-Modifier.prototype.toggle = function(element, context) {
+ClassName.prototype.toggle = function(element, context) {
   if (this.isSet(element)) {
     this.toggledValue = this.value
     return this.remove(element, context)
@@ -106,7 +106,7 @@ Modifier.prototype.toggle = function(element, context) {
   return this.set(value, element, context)
 }
 
-Modifier.prototype.set = function(value, element, context) {
+ClassName.prototype.set = function(value, element, context) {
   context = context || element
 
   var previousValue = this.value
@@ -126,7 +126,7 @@ Modifier.prototype.set = function(value, element, context) {
   return callOnChange(this, context, previousValue, newValue)
 }
 
-Modifier.prototype.remove = function(element, context) {
+ClassName.prototype.remove = function(element, context) {
   context = context || element
   if (this.value == null) {
     return Promise.resolve()
