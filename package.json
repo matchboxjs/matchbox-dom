@@ -1,6 +1,6 @@
 {
   "name": "matchbox-dom",
-  "version": "0.9.3",
+  "version": "0.10.0",
   "description": "Matchbox View and dom library",
   "main": "index.js",
   "scripts": {

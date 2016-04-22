@@ -10,10 +10,10 @@ var PrototypeExtension = factory.PrototypeExtension
 var domData = require("../data")
 var DomData = require("../data/Data")
 var Selector = require("../Selector")
-var Fragment = require("../Fragment")
 var Event = require("./Event")
 var ClassName = require("./ClassName")
 var Child = require("./Child")
+var Template = require("./Template")
 
 module.exports = factory({
   include: [Radio],
@@ -65,11 +65,11 @@ module.exports = factory({
         ? child.contains(viewValue)
         : child
     }),
-    fragments: new CacheExtension(function(prototype, name, fragment) {
-      if (!(fragment instanceof Fragment)) {
-        return new Fragment(fragment)
+    templates: new CacheExtension(function(prototype, name, template) {
+      if (!(template instanceof Template)) {
+        return new Template(template)
       }
-      return fragment
+      return template
     })
   },
 
@@ -78,7 +78,7 @@ module.exports = factory({
   events: {},
   dataset: {},
   classList: {},
-  fragments: {},
+  templates: {},
   children: {},
 
   constructor: function View(element) {
@@ -251,6 +251,16 @@ module.exports = factory({
       if (this._classList[name]) {
         return this._classList[name].toggle(this.element, this)
       }
+    },
+
+    // Templates
+
+    renderTemplate: function(name, context, options) {
+      var template = this.templates[name]
+      if (template) {
+        return template.render(context, options)
+      }
+      return Promise.reject(new Error("Unknown template " + name))
     },
 
     // Model

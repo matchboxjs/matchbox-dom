@@ -282,6 +282,40 @@ describe("View", function() {
     })
   })
 
+  describe("templates", function() {
+    test("source shorthand", function(element, done) {
+      var source = createViewElement("template").outerHTML
+      var view = new (View.extend({
+        templates: {
+          default: source
+        }
+      }))(element)
+      view.renderTemplate("default").then(function(renderedElement) {
+        assert.equal(renderedElement.outerHTML, source)
+        done()
+      })
+    })
+    test("compiler shorthand", function(element, done) {
+      var source = createViewElement("template").outerHTML
+      var templateContext = {}
+      var compilerOptions = {}
+      var view = new (View.extend({
+        templates: {
+          default: function(options, callback) {
+            return function render(data) {
+              assert.equal(data, templateContext)
+              return source
+            }
+          }
+        }
+      }))(element)
+      view.renderTemplate("default", templateContext, compilerOptions).then(function(renderedElement) {
+        assert.equal(renderedElement.outerHTML, source)
+        done()
+      })
+    })
+  })
+
   describe("children", function() {
     test("bare bone example", function(element, done) {
       var child = createViewElement("test:child")
