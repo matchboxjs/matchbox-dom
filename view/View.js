@@ -7,8 +7,7 @@ var InstanceExtension = factory.InstanceExtension
 var CacheExtension = factory.CacheExtension
 var PrototypeExtension = factory.PrototypeExtension
 
-var domData = require("../data")
-var DomData = require("../data/Data")
+var DomData = require("./DomData")
 var Selector = require("../Selector")
 var Event = require("./Event")
 var ClassName = require("./ClassName")
@@ -39,7 +38,7 @@ module.exports = factory({
     }),
     dataset: new CacheExtension(function(prototype, name, data) {
       if (!(data instanceof DomData)) {
-        data = domData.create(name, data)
+        data = new DomData(data)
       }
       data.name = data.name || name
 
@@ -123,11 +122,11 @@ module.exports = factory({
       forIn(this._classList, function(name, modifier) {
         modifier.reset(element, view)
       })
-      forIn(this.dataset, function(name, data) {
-        if (!data.has(element) && data.default != null) {
-          data.set(element, data.default)
-        }
-      })
+      if (element) {
+        forIn(this.dataset, function(name, data) {
+          data.reset(view, element)
+        })
+      }
       forIn(this.children, function(name) {
         var child = view.children[name]
         if (child && child.autoselect) {
@@ -200,13 +199,13 @@ module.exports = factory({
     setData: function(name, value, silent) {
       var data = this.dataset[name]
       if (data) {
-        return data.set(this.element, value, silent)
+        return data.set(this, this.element, value, silent)
       }
     },
     removeData: function(name, silent) {
       var data = this.dataset[name]
       if (data) {
-        data.remove(this.element, silent)
+        data.remove(this, this.element, silent)
       }
     },
     hasData: function(name) {
