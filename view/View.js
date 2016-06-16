@@ -313,7 +313,7 @@ module.exports = factory({
         }
       }
 
-      return null
+      return member
     },
     findChild: function(property) {
       var child
